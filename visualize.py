@@ -8,6 +8,7 @@ def run():
     figures = []
     spotify = authorize()
     show_user_top_tracks(spotify, figures)
+    show_user_top_artists(spotify, figures)
     show_figures(figures)
 
 
@@ -55,6 +56,28 @@ def show_user_top_tracks(spotify, figures):
     figures.append(table_obj)
 
 
+def show_user_top_artists(spotify, figures):
+    top_artists = spotify.current_user_top_artists(limit=10)
+
+    res_list = []
+    for artist in top_artists['items']:
+        res_list.append(artist['name'])
+
+    table_obj = go.Table(
+        header=dict(values=['Artist'],
+                    line_color='darkslategray',
+                    fill_color='lightskyblue',
+                    align='center'),
+        cells=dict(values=[res_list],
+                   line_color='darkslategray',
+                   fill_color='lightcyan',
+                   align='center',
+                   font_size=15,
+                   height=30))
+
+    figures.append(table_obj)
+
+
 def show_figures(figures):
     fig = sub.make_subplots(
         rows=2, cols=2,
@@ -65,6 +88,8 @@ def show_figures(figures):
     )
 
     fig.add_trace(figures[0], row=1, col=1)  # top 10 tracks
+    fig.add_trace(figures[1], row=2, col=1)  # top 10 artists
+
     fig.show()
 
 
