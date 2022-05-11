@@ -9,6 +9,7 @@ def run():
     spotify = authorize()
     show_user_top_tracks(spotify, figures)
     show_user_top_artists(spotify, figures)
+    show_user_top_genres(spotify, figures)
     show_figures(figures)
 
 
@@ -78,17 +79,40 @@ def show_user_top_artists(spotify, figures):
     figures.append(table_obj)
 
 
+def show_user_top_genres(spotify, figures):
+    top_artists = spotify.current_user_top_artists(limit=50)
+    genres_dic = dict()
+
+    for artist in top_artists['items']:
+        genres = artist['genres']
+        for genre in genres:
+            if genre in genres_dic.keys():
+                genres_dic[genre] += 1
+            else:
+                genres_dic[genre] = 1
+
+    genres_dic = dict(sorted(genres_dic.items(), key=lambda item: item[1], reverse=True))
+    n_genres = list(genres_dic.items())[:10]
+
+    x_vals = [item[0] for item in n_genres]
+    y_vals = [item[1] for item in n_genres]
+
+    pie_obj = go.Pie(labels=x_vals, values=y_vals)
+    figures.append(pie_obj)
+
+
 def show_figures(figures):
     fig = sub.make_subplots(
         rows=2, cols=2,
         specs=[[{"type": "table"}, {"type": "pie"}],
                [{"type": "table"}, {"type": "table"}]],
-        subplot_titles=("Your top 10 tracks in the last 6 months", "Your top 10 genres in the last 6 months",
-                        "Your top 10 artists in the last 6 months ", "Your playlists' brief summary")
+        subplot_titles=("Your top tracks in the last 6 months", "Your top genres in the last 6 months",
+                        "Your top artists in the last 6 months ", "Your playlists' brief summary")
     )
 
-    fig.add_trace(figures[0], row=1, col=1)  # top 10 tracks
-    fig.add_trace(figures[1], row=2, col=1)  # top 10 artists
+    fig.add_trace(figures[0], row=1, col=1)  # top tracks
+    fig.add_trace(figures[1], row=2, col=1)  # top artists
+    fig.add_trace(figures[2], row=1, col=2)  # top genres
 
     fig.show()
 
