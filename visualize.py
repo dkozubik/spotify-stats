@@ -8,9 +8,9 @@ from statistics import mean
 def run():
     figures = []
     spotify = authorize()
-    show_user_top_tracks(spotify, figures)
-    show_user_top_artists(spotify, figures)
-    show_user_top_genres(spotify, figures)
+    show_user_top_tracks(spotify, figures, limit=10)
+    show_user_top_artists(spotify, figures, limit=15)
+    show_user_top_genres(spotify, figures, limit=7)
     show_user_playlists_summary(spotify, figures)
     show_figures(figures)
 
@@ -18,7 +18,7 @@ def run():
 def authorize():
     """
     Add your <client_id>, <client_server>, <redirect_uri>
-    and <username> credentials or set them as environmental variable
+    and <username> developer spotify account's credentials or set them as environmental variables
     """
     client_id = ''
     client_secret = ''
@@ -33,22 +33,25 @@ def authorize():
     return spotipy.Spotify(auth_manager=token)
 
 
-def show_user_top_tracks(spotify, figures):
-    top_tracks = spotify.current_user_top_tracks(limit=10)
-
+def show_user_top_tracks(spotify, figures, limit=10):
+    top_tracks = spotify.current_user_top_tracks(limit=limit)
     res_list = []
+
     for track in top_tracks['items']:
         res_list.append((track['artists'][0]['name'], track['name']))
 
+    col0 = list(range(1, len(res_list) + 1))
     col1 = [tmp[0] for tmp in res_list]
     col2 = [tmp[1] for tmp in res_list]
 
     table_obj = go.Table(
-        header=dict(values=['Artist', 'Track'],
+        columnorder=[1, 2, 3],
+        columnwidth=[40, 400, 400],
+        header=dict(values=['#', 'Artist', 'Track'],
                     line_color='darkslategray',
                     fill_color='lightskyblue',
                     align='center'),
-        cells=dict(values=[col1, col2],
+        cells=dict(values=[col0, col1, col2],
                    line_color='darkslategray',
                    fill_color='lightcyan',
                    align='center',
@@ -59,19 +62,22 @@ def show_user_top_tracks(spotify, figures):
     figures.append(table_obj)
 
 
-def show_user_top_artists(spotify, figures):
-    top_artists = spotify.current_user_top_artists(limit=10)
-
+def show_user_top_artists(spotify, figures, limit=10):
+    top_artists = spotify.current_user_top_artists(limit=limit)
     res_list = []
+
     for artist in top_artists['items']:
         res_list.append(artist['name'])
 
+    order = list(range(1, len(res_list) + 1))
     table_obj = go.Table(
-        header=dict(values=['Artist'],
+        columnorder=[1, 2],
+        columnwidth=[40, 400],
+        header=dict(values=['#', 'Artist'],
                     line_color='darkslategray',
                     fill_color='lightskyblue',
                     align='center'),
-        cells=dict(values=[res_list],
+        cells=dict(values=[order, res_list],
                    line_color='darkslategray',
                    fill_color='lightcyan',
                    align='center',
@@ -81,20 +87,17 @@ def show_user_top_artists(spotify, figures):
     figures.append(table_obj)
 
 
-def show_user_top_genres(spotify, figures):
+def show_user_top_genres(spotify, figures, limit=10):
     top_artists = spotify.current_user_top_artists(limit=50)
     genres_dic = dict()
 
     for artist in top_artists['items']:
         genres = artist['genres']
         for genre in genres:
-            if genre in genres_dic.keys():
-                genres_dic[genre] += 1
-            else:
-                genres_dic[genre] = 1
+            genres_dic[genre] = genres_dic.get(genre, 0) + 1
 
     genres_dic = dict(sorted(genres_dic.items(), key=lambda item: item[1], reverse=True))
-    n_genres = list(genres_dic.items())[:10]
+    n_genres = list(genres_dic.items())[:limit]
 
     x_vals = [item[0] for item in n_genres]
     y_vals = [item[1] for item in n_genres]
@@ -124,7 +127,7 @@ def show_user_playlists_summary(spotify, figures):
     col4 = [item[3] for item in data]
 
     table_obj = go.Table(
-        header=dict(values=['Playlist name', 'Total tracks', 'Average song duration (s)', 'First song in the playlist'],
+        header=dict(values=['Playlist', 'Total tracks', 'Average song duration (s)', 'The 1st song in the playlist'],
                     line_color='darkslategray',
                     fill_color='lightskyblue',
                     align='center'),
@@ -153,7 +156,7 @@ def show_figures(figures):
     fig.add_trace(figures[2], row=1, col=2)  # top genres
     fig.add_trace(figures[3], row=2, col=2)  # playlists summary
 
-    fig.update_layout(width=1200, height=1000)
+    fig.update_layout(width=1400, height=1100)
     fig.show()
 
 
