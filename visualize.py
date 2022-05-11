@@ -26,7 +26,7 @@ def authorize():
     redirect_uri = input('Enter Redirect URI: ')
     username = input('Enter your Spotify username: ')
 
-    scope = 'user-top-read playlist-read-private'
+    scope = 'user-library-read user-top-read playlist-read-private'
     try:
         token = SpotifyOAuth(client_id=client_id, client_secret=client_secret, redirect_uri=redirect_uri, scope=scope,
                              username=username)
