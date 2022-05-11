@@ -25,7 +25,7 @@ def authorize():
     redirect_uri = ''
     username = ''
 
-    scope = 'playlist-modify-private user-read-private user-library-read user-top-read playlist-read-private'
+    scope = 'user-top-read playlist-read-private'
 
     token = SpotifyOAuth(client_id=client_id, client_secret=client_secret, redirect_uri=redirect_uri, scope=scope,
                          username=username)
@@ -156,7 +156,7 @@ def show_figures(figures):
     fig.add_trace(figures[2], row=1, col=2)  # top genres
     fig.add_trace(figures[3], row=2, col=2)  # playlists summary
 
-    fig.update_layout(width=1400, height=1100)
+    fig.update_layout(width=1200, height=1100)
     fig.show()
 
 
