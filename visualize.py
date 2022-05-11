@@ -1,5 +1,5 @@
 import spotipy
-from spotipy import SpotifyOAuth
+from spotipy import SpotifyOAuth, SpotifyOauthError
 import plotly.graph_objects as go
 import plotly.subplots as sub
 from statistics import mean
@@ -8,11 +8,12 @@ from statistics import mean
 def run():
     figures = []
     spotify = authorize()
-    show_user_top_tracks(spotify, figures, limit=10)
-    show_user_top_artists(spotify, figures, limit=15)
-    show_user_top_genres(spotify, figures, limit=7)
-    show_user_playlists_summary(spotify, figures)
-    show_figures(figures)
+    if spotify is not None:
+        show_user_top_tracks(spotify, figures)
+        show_user_top_artists(spotify, figures)
+        show_user_top_genres(spotify, figures)
+        show_user_playlists_summary(spotify, figures)
+        show_figures(figures)
 
 
 def authorize():
@@ -20,17 +21,21 @@ def authorize():
     Add your <client_id>, <client_server>, <redirect_uri>
     and <username> developer spotify account's credentials or set them as environmental variables
     """
-    client_id = ''
-    client_secret = ''
-    redirect_uri = ''
-    username = ''
+    client_id = input('Enter your Client ID: ')
+    client_secret = input('Enter your Client secret: ')
+    redirect_uri = input('Enter Redirect URI: ')
+    username = input('Enter your Spotify username: ')
 
     scope = 'user-top-read playlist-read-private'
+    try:
+        token = SpotifyOAuth(client_id=client_id, client_secret=client_secret, redirect_uri=redirect_uri, scope=scope,
+                             username=username)
 
-    token = SpotifyOAuth(client_id=client_id, client_secret=client_secret, redirect_uri=redirect_uri, scope=scope,
-                         username=username)
+        return spotipy.Spotify(auth_manager=token)
 
-    return spotipy.Spotify(auth_manager=token)
+    except SpotifyOauthError:
+        print("Error occurred while authentication")
+        return None
 
 
 def show_user_top_tracks(spotify, figures, limit=10):
